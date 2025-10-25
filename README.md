@@ -8,9 +8,9 @@ Reconnaise.ai is a project by the student team G2 `Motor_Ola` for the Swinburne 
 
 The work is organised as follow:
 
-- `/models`: AI datasets and model for Assignment 2
-- `/backend`: FastAPI backend for Assignment 3
+- `/backend`: AI datasets and model for Assignment 2
 - `/frontend`: React frontend for Assignment 3
+- `/api`: FastAPI for Assignment 3
 
 ## Tech Stack
 
