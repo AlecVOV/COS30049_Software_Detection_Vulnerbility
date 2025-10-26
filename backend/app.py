@@ -6,10 +6,14 @@ import seaborn as sns
 from ml_detector import VulnerabilityDetector
 from vuln_rules import RuleBasedDetector
 import os
+import joblib
+from pathlib import Path
+
+
 
 # Page config
 st.set_page_config(
-    page_title="SecureCode AI - Vulnerability Detector",
+    page_title="Reconnaise.ai -Vulnerability Detector",
     page_icon="🔒",
     layout="wide"
 )
@@ -32,7 +36,7 @@ if error:
     st.stop()
 
 # Sidebar navigation
-st.sidebar.title("🔒 SecureCode AI")
+st.sidebar.title("🔒 Reconnaise.ai")
 page = st.sidebar.radio("Navigation", 
     ["🏠 Home", "📊 Data Analysis", "🔍 Scan Code", "📈 Model Comparison"])
 
@@ -40,38 +44,64 @@ page = st.sidebar.radio("Navigation",
 # HOME PAGE
 # ====================
 if page == "🏠 Home":
-    st.title("SecureCode AI - Vulnerability Detection System")
+    st.title("Reconnaise.ai -Vulnerability Detection System")
     
     st.markdown("""
     ### 🎯 Project Overview
-    An AI-powered system to detect security vulnerabilities in source code using:
-    - **Machine Learning Models** (Logistic Regression + Random Forest + SVM)
-    - **Rule-Based Detection** (Pattern matching for known vulnerabilities)
-    
+    An AI-powered system to detect security vulnerabilities in source code by combining machine learning ensembles with rule-based pattern matching.
+
+    ---
+
     ### 🤖 Machine Learning Models
-    1. **Logistic Regression** - Fast, interpretable baseline
-    2. **Random Forest** - Handles complex patterns
-    3. **Support Vector Machine (SVM)** - High accuracy with kernel tricks
-    
-    ### 📊 Dataset
-    - **DiverseVul**: 18,945 vulnerable code samples
-    - Multiple programming languages supported
-    
+    - **Logistic Regression** — Fast baseline; L2 regularization
+    - **Random Forest** — Ensemble of trees; robust to overfitting
+    - **Gradient Boosting** — Sequential boosting for high accuracy
+    - **XGBoost** — Optimized gradient boosting framework
+    - **LightGBM** — Fast, low-memory gradient boosting
+    - **Naive Bayes** — Simple probabilistic classifier
+
+    ### 📊 Dataset (selected sources)
+    - [DiverseVul](https://github.com/wagner-group/diversevul)
+    - [PHP-Vulnerabilities](https://github.com/sumeet-darekar/PHP-vulnerabilities-dataset)
+    - [VulnCode-PHP](https://github.com/MeleseAwoke/PHP-vulnerability-dataset)
+
     ### 🔧 Supported Languages
-    Python, JavaScript, Java, C, C++
+    - Primary: **PHP**
+    - Planned/partial support: **JavaScript**, **Python**
+    - Notes: Rule-based detection targets common PHP patterns; ML models are language-agnostic when trained on tokenized representations.
     """)
     
     # Show quick stats
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
+    
+    # Load metrics dynamically
+    @st.cache_data
+    def load_metrics():
+        try:
+            df = pd.read_csv('data/merged_all_datasets.csv')
+            total_samples = len(df)
+            
+            # Load model comparison if exists
+            if os.path.exists('docs/model_comparison.csv'):
+                df_metrics = pd.read_csv('docs/model_comparison.csv')
+                num_models = len(df_metrics)
+                best_accuracy = df_metrics['Accuracy'].max() * 100  # Convert to percentage
+            else:
+                num_models = 6
+                best_accuracy = 97.92
+            
+            return total_samples, num_models, best_accuracy
+        except Exception as e:
+            return 47858, 6, 97.92  # Fallback values
+    
+    total_samples, num_models, best_accuracy = load_metrics()
     
     with col1:
-        st.metric("Total Samples", "330,000")
+        st.metric("Total Samples", f"{total_samples:,}")
     with col2:
-        st.metric("ML Models", "6")
+        st.metric("ML Models", f"{num_models}")
     with col3:
-        st.metric("Best Accuracy", "70.40%")
-    with col4:
-        st.metric("Detection Methods", "4")
+        st.metric("Best Accuracy", f"{best_accuracy:.2f}%")
 
 # ====================
 # DATA ANALYSIS PAGE
@@ -102,28 +132,13 @@ elif page == "📊 Data Analysis":
         st.subheader("Class Distribution")
         col1, col2 = st.columns(2)
         
-        with col1:
-            fig, ax = plt.subplots(figsize=(8, 6))
-            df['is_vulnerable'].value_counts().plot(kind='bar', ax=ax, color=['#2ecc71', '#e74c3c'])
-            ax.set_title('Vulnerable vs Safe Code', fontsize=14, fontweight='bold')
-            ax.set_xlabel('is_vulnerable')
-            ax.set_ylabel('Count')
-            ax.set_xticklabels(['Safe', 'Vulnerable'], rotation=0)
-            st.pyplot(fig)
-        
-        with col2:
-            # Code length distribution
-            df['code_length'] = df['code'].str.len()
-            fig, ax = plt.subplots(figsize=(8, 6))
-            df[df['is_vulnerable'] == 0]['code_length'].hist(alpha=0.6, bins=50, ax=ax, 
-                label='Safe', color='#2ecc71')
-            df[df['is_vulnerable'] == 1]['code_length'].hist(alpha=0.6, bins=50, ax=ax, 
-                label='Vulnerable', color='#e74c3c')
-            ax.set_title('Code Length Distribution', fontsize=14, fontweight='bold')
-            ax.set_xlabel('Code Length (characters)')
-            ax.set_ylabel('Frequency')
-            ax.legend()
-            st.pyplot(fig)
+        fig, ax = plt.subplots(figsize=(8, 6))
+        df['is_vulnerable'].value_counts().plot(kind='bar', ax=ax, color=['#2ecc71', '#e74c3c'])
+        ax.set_title('Vulnerable vs Safe Code', fontsize=14, fontweight='bold')
+        ax.set_xlabel('is_vulnerable')
+        ax.set_ylabel('Count')
+        ax.set_xticklabels(['Safe', 'Vulnerable'], rotation=0)
+        st.pyplot(fig)
             
     except FileNotFoundError:
         st.error("Dataset not found. Please ensure data/chunked_vuln_dataset.csv exists.")
@@ -139,20 +154,30 @@ elif page == "🔍 Scan Code":
         ["📝 Paste Code", "📁 Upload File"])
     
     code_input = ""
+    language = "PHP"  # Default language
     
     if input_method == "📝 Paste Code":
         code_input = st.text_area("Paste your code here:", height=300,
             placeholder="# Paste your code here...\ndef example():\n    pass")
         language = st.selectbox("Select Language:", 
-            ["Python", "JavaScript", "Java", "C", "C++"])
+            ["PHP"])
     
     else:
         uploaded_file = st.file_uploader("Upload source code file", 
-            type=['py', 'js', 'java', 'c', 'cpp', 'txt'])
+            type=['php'])
         if uploaded_file:
             code_input = uploaded_file.read().decode('utf-8')
-            st.code(code_input, language='python')
-    
+            st.code(code_input, language='php')
+            
+            # Auto-detect language from file extension
+            file_extension = uploaded_file.name.split('.')[-1].lower()
+            if file_extension == 'php':
+                language = "PHP"
+            else:
+                language = "PHP"  # fallback to PHP
+            
+            st.info(f"🔍 Detected language: **{language}**")
+
     if st.button("🔍 Scan for Vulnerabilities", type="primary", width='stretch'):
         if code_input:
             with st.spinner("Analyzing code with 6 ML models + rule-based detection..."):
@@ -292,9 +317,7 @@ elif page == "📈 Model Comparison":
         # Add after Chart 4 (around line 290)
 
         st.markdown("---")
-        
-        
-        
+                
         # Charts 4 & 5: Side by side
         col1, col2 = st.columns(2)
         
@@ -302,14 +325,14 @@ elif page == "📈 Model Comparison":
             st.markdown("### ROC Curves")
             if os.path.exists('docs/roc_curves.png'):
                 st.image('docs/roc_curves.png', 
-                        use_container_width=True,
+                        width='stretch=True',
                         caption='Receiver Operating Characteristic curves showing true positive vs false positive rates')
                 
         with col2:
             st.markdown("### Precision-Recall Curves")
             if os.path.exists('docs/precision_recall_curves.png'):
                 st.image('docs/precision_recall_curves.png', 
-                        use_container_width=True,
+                        width='stretch=True',
                         caption='Trade-off between precision and recall at various thresholds')
                 
     else:
@@ -391,6 +414,6 @@ elif page == "📈 Model Comparison":
 
 # Footer
 st.sidebar.markdown("---")
-st.sidebar.markdown("**SecureCode AI v2.0**")
+st.sidebar.markdown("**Reconnaise.ai v1.0**")
 st.sidebar.markdown("COS30049: Computing Technology Innovation Project - Assignment 2")
 st.sidebar.markdown("6 ML Models + Rules-based system")

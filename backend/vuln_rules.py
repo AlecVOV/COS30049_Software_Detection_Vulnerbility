@@ -5,16 +5,21 @@ from typing import List, Dict
 class RuleBasedDetector:
     def __init__(self):
         self.rules = {
-            'python': [
-                {'title':'Dangerous eval/exec usage','pattern':r'\b(eval|exec)\s*\(','severity':'High','recommendation':'Avoid eval/exec; use safe parsing.'},
-                {'title':'Hardcoded secret','pattern':r"(api_key|secret|token|password)\s*=\s*['\"][^'\"]+['\"]",'severity':'High','recommendation':'Move secrets to environment variables.'},
-                {'title':'Possible SQL via string concat','pattern':r"\bexecute\b.*\+|SELECT.*\+|INSERT.*\+","severity":"High","recommendation":"Use parameterized queries."},
-                {'title':'Weak hash (md5|sha1)','pattern':r'hashlib\.(md5|sha1)\(','severity':'Medium','recommendation':'Use SHA256 or bcrypt.'},
-            ],
-            'javascript': [
-                {'title':'InnerHTML assignment','pattern':r'\.innerHTML\s*=','severity':'High','recommendation':'Sanitize/encode user input.'},
-                {'title':'eval usage','pattern':r'\beval\s*\(','severity':'High','recommendation':'Avoid eval.'},
-                {'title':'document.write XSS','pattern':r'document\.write\(','severity':'High','recommendation':'Escape user input.'},
+            # 'python': [
+            #     {'title':'Dangerous eval/exec usage','pattern':r'\b(eval|exec)\s*\(','severity':'High','recommendation':'Avoid eval/exec; use safe parsing.'},
+            #     {'title':'Hardcoded secret','pattern':r"(api_key|secret|token|password)\s*=\s*['\"][^'\"]+['\"]",'severity':'High','recommendation':'Move secrets to environment variables.'},
+            #     {'title':'Possible SQL via string concat','pattern':r"\bexecute\b.*\+|SELECT.*\+|INSERT.*\+","severity":"High","recommendation":"Use parameterized queries."},
+            #     {'title':'Weak hash (md5|sha1)','pattern':r'hashlib\.(md5|sha1)\(','severity':'Medium','recommendation':'Use SHA256 or bcrypt.'},
+            # ],
+            # 'javascript': [
+            #     {'title':'InnerHTML assignment','pattern':r'\.innerHTML\s*=','severity':'High','recommendation':'Sanitize/encode user input.'},
+            #     {'title':'eval usage','pattern':r'\beval\s*\(','severity':'High','recommendation':'Avoid eval.'},
+            #     {'title':'document.write XSS','pattern':r'document\.write\(','severity':'High','recommendation':'Escape user input.'},
+            # ],
+            'php': [
+                {'title':'SQL Injection via string concat','pattern':r'\b(mysql_query|mysqli_query|pg_query)\s*\(.*\+','severity':'High','recommendation':'Use prepared statements.'},
+                {'title':'Unsanitized user input in eval','pattern':r'\beval\s*\(.*\$_(GET|POST|REQUEST|COOKIE)','severity':'High','recommendation':'Avoid eval with user input.'},
+                {'title':'Hardcoded credentials','pattern':r"(DB_USER|DB_PASSWORD|API_KEY)\s*=\s*['\"][^'\"]+['\"]",'severity':'High','recommendation':'Use environment variables for secrets.'},
             ]
         }
 

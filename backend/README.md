@@ -1,4 +1,4 @@
-# SecureCode AI - PHP Vulnerability Detection System
+# Reconnaise.ai -PHP Vulnerability Detection System
 
 A comprehensive vulnerability detection system for PHP code using ensemble machine learning and rule-based analysis.
 
@@ -17,7 +17,7 @@ A comprehensive vulnerability detection system for PHP code using ensemble machi
 
 ## 🔍 Overview
 
-SecureCode AI is a hybrid vulnerability detection system that combines:
+Reconnaise.ai is a hybrid vulnerability detection system that combines:
 - **6 Machine Learning Models** (Logistic Regression, Random Forest, Gradient Boosting, XGBoost, LightGBM, Naive Bayes)
 - **Rule-Based Detection** for common PHP vulnerabilities
 - **Ensemble Predictions** with weighted voting
@@ -42,7 +42,7 @@ The system detects various PHP vulnerabilities including SQL Injection, XSS, Com
 ├── vuln_rules.py                       # Rule-based detector
 ├── train_model.py                      # Model training script
 ├── chunk_dataset.py                    # Dataset chunking utility
-├── clean_merge_chunk_dataset.ipynb     # Dataset preprocessing notebook
+├── merge_dataset.py                     # Dataset preprocessing script
 ├── model_comparison.ipynb              # Model evaluation notebook
 ├── requirements.txt                    # Python dependencies
 ├── data/
@@ -127,46 +127,12 @@ The project uses three datasets that are merged and balanced:
 
 ### Pre-processed Datasets Available:
 
-If you have the pre-processed datasets in `data/`, you can skip to [Training Models](#-training-models).
+In the workspace supply, we have preproccessed the data, now is to merge them all in one.
 
-### Manual Dataset Processing (Optional):
-
-If you need to regenerate the datasets or make modifications, follow these steps:
-
-#### 0. Convert all PHP code into CSV file fore Dataset_3:
+### 1. Merge Dataset Structure:
 ```powershell
-# Run the Jupyter notebook for dataset cleaning and merging
-jupyter notebook write_php_to_csv.ipynb
+python merge_dataset.py
 ```
-This notebook extracts PHP code snippets from raw files and saves them into `[folder_name]_dataset.csv`.
--If you need to regenerate the datasets:
- --- IGNORE ---
-
-Then you can merge all the `[folder_name]_dataset.csv` into dataset_3_chunking_results.csv by run the following command in the Dataset_3 folder:
-```powershell
-python merging_dataset.py
-```
-
-#### 1. Process Individual Datasets:
-
-```powershell
-# Run the Jupyter notebook for dataset cleaning and merging
-jupyter notebook clean_merge_chunk_dataset.ipynb
-```
-
-This notebook performs:
-- Filtering PHP code from DiverseVul dataset
-- Renaming columns to standardized format (`code`, `is_vulnerable`)
-- Merging all datasets
-- Balancing vulnerable and safe samples
-
-#### 2. Alternative: Use Chunking Script:
-
-```powershell
-python chunk_dataset.py
-```
-
-### Final Dataset Structure:
 
 After processing, you should have:
 - `data/balanced_merged_dataset.csv` - **47,858 samples** (balanced)
@@ -221,7 +187,7 @@ python train_model.py
 - `docs/model_comparison.csv` - Performance metrics
 - `docs/*.png` - Visualization charts
 
-### Step 3: Verify Training and Export Charts
+### Step 3: Verify Training and Export Charts (need to run only once)
 
 ```powershell
 # Run model comparison notebook to export some charts for later reference

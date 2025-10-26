@@ -17,7 +17,7 @@ class VulnerabilityDetector:
         """Load all trained models and vectorizer"""
         self.models_dir = models_dir
         
-        print("🔒 Loading SecureCode AI Models...")
+        print("🔒 Loading Reconnaise.ai Models...")
         
         # Load vectorizer
         vectorizer_path = os.path.join(models_dir, 'vectorizer.joblib')
