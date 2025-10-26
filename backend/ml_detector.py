@@ -169,91 +169,91 @@ class VulnerabilityDetector:
 
 # Example usage and testing
 if __name__ == "__main__":
-    print("="*70)
-    print("TESTING VULNERABILITY DETECTOR")
-    print("="*70)
-    
-    # Initialize detector
-    try:
-        detector = VulnerabilityDetector()
-    except FileNotFoundError as e:
-        print(f"\n❌ Error: {e}")
-        print("\nPlease run: python train_model.py")
-        exit(1)
-    
-    # Show model info
-    info = detector.get_model_info()
-    print(f"📊 Model Information:")
-    print(f"  Total models: {info['total_models']}")
-    print(f"  Vectorizer features: {info['vectorizer_features']}")
-    
-    # Test cases
-    test_cases = [
-        {
-            'name': 'SQL Injection',
-            'code': '''
+	print("="*70)
+	print("TESTING VULNERABILITY DETECTOR")
+	print("="*70)
+
+	# Initialize detector
+	try:
+		detector = VulnerabilityDetector()
+	except FileNotFoundError as e:
+		print(f"\n❌ Error: {e}")
+		print("\nPlease run: python train_model.py")
+		exit(1)
+
+	# Show model info
+	info = detector.get_model_info()
+	print(f"📊 Model Information:")
+	print(f"  Total models: {info['total_models']}")
+	print(f"  Vectorizer features: {info['vectorizer_features']}")
+
+	# Test cases
+	test_cases = [
+		{
+			'name': 'SQL Injection',
+			'code': '''
 def get_user(username):
-    conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
-    query = "SELECT * FROM users WHERE username = '" + username + "'"
-    cursor.execute(query)
-    return cursor.fetchone()
+	conn = sqlite3.connect('users.db')
+	cursor = conn.cursor()
+	query = "SELECT * FROM users WHERE username = '" + username + "'"
+	cursor.execute(query)
+	return cursor.fetchone()
 '''
-        },
-        {
-            'name': 'Command Injection',
-            'code': '''
+		},
+		{
+			'name': 'Command Injection',
+			'code': '''
 import os
 def ping_server(host):
-    command = "ping -c 1 " + host
-    os.system(command)
+	command = "ping -c 1 " + host
+	os.system(command)
 '''
-        },
-        {
-            'name': 'Safe Code',
-            'code': '''
+		},
+		{
+			'name': 'Safe Code',
+			'code': '''
 def calculate_sum(a, b):
-    """Safely calculate sum of two numbers"""
-    if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
-        raise ValueError("Arguments must be numbers")
-    return a + b
+	"""Safely calculate sum of two numbers"""
+	if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
+		raise ValueError("Arguments must be numbers")
+	return a + b
 '''
-        }
-    ]
-    
-    # Test each case
-    for i, test in enumerate(test_cases, 1):
-        print(f"\n{'='*70}")
-        print(f"TEST CASE {i}: {test['name']}")
-        print(f"{'='*70}")
-        
-        result = detector.predict(test['code'])
-        
-        # Overall result
-        if result['is_vulnerable']:
-            print(f"\n🔴 VERDICT: VULNERABLE")
-        else:
-            print(f"\n🟢 VERDICT: SAFE")
-        
-        print(f"   Confidence: {result['confidence']:.1%}")
-        print(f"   Risk Level: {result['risk_level']}")
-        print(f"   Ensemble Probability: {result['ensemble_probability']:.1%}")
-        print(f"   Weighted Probability: {result['weighted_probability']:.1%}")
-        
-        # Voting results
-        print(f"\n📊 Voting Results:")
-        print(f"   Vulnerable: {result['voting']['vulnerable']}/{result['voting']['total_models']}")
-        print(f"   Safe: {result['voting']['safe']}/{result['voting']['total_models']}")
-        print(f"   Decision: {result['voting']['decision']}")
-        
-        # Individual predictions
-        print(f"\n🤖 Individual Model Predictions:")
-        for model_name, pred in result['model_predictions'].items():
-            status = "🔴 VULN" if pred['vulnerable'] else "🟢 SAFE"
-            bar_length = int(pred['vuln_prob'] * 30)
-            bar = "█" * bar_length + "░" * (30 - bar_length)
-            print(f"   {model_name:20s}: {status} {bar} {pred['vuln_prob']:.1%}")
-    
-    print(f"\n{'='*70}")
-    print("✅ TESTING COMPLETE")
-    print(f"{'='*70}")
+		}
+	]
+
+	# Test each case
+	for i, test in enumerate(test_cases, 1):
+		print(f"\n{'='*70}")
+		print(f"TEST CASE {i}: {test['name']}")
+		print(f"{'='*70}")
+
+		result = detector.predict(test['code'])
+
+		# Overall result
+		if result['is_vulnerable']:
+			print(f"\n🔴 VERDICT: VULNERABLE")
+		else:
+			print(f"\n🟢 VERDICT: SAFE")
+
+		print(f"   Confidence: {result['confidence']:.1%}")
+		print(f"   Risk Level: {result['risk_level']}")
+		print(f"   Ensemble Probability: {result['ensemble_probability']:.1%}")
+		print(f"   Weighted Probability: {result['weighted_probability']:.1%}")
+
+		# Voting results
+		print(f"\n📊 Voting Results:")
+		print(f"   Vulnerable: {result['voting']['vulnerable']}/{result['voting']['total_models']}")
+		print(f"   Safe: {result['voting']['safe']}/{result['voting']['total_models']}")
+		print(f"   Decision: {result['voting']['decision']}")
+
+		# Individual predictions
+		print(f"\n🤖 Individual Model Predictions:")
+		for model_name, pred in result['model_predictions'].items():
+			status = "🔴 VULN" if pred['vulnerable'] else "🟢 SAFE"
+			bar_length = int(pred['vuln_prob'] * 30)
+			bar = "█" * bar_length + "░" * (30 - bar_length)
+			print(f"   {model_name:20s}: {status} {bar} {pred['vuln_prob']:.1%}")
+
+	print(f"\n{'='*70}")
+	print("✅ TESTING COMPLETE")
+	print(f"{'='*70}")

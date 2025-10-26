@@ -1,4 +1,3 @@
-
 import re
 from typing import List, Dict
 
@@ -23,16 +22,16 @@ class RuleBasedDetector:
             ]
         }
 
-    def analyze(self, code: str, language: str='python') -> List[Dict]:
-        checks = self.rules.get(language.lower(), [])
-        findings = []
-        for r in checks:
-            for m in re.finditer(r['pattern'], code, re.IGNORECASE):
-                findings.append({
-                    'title': r['title'],
-                    'severity': r['severity'],
-                    'span': (m.start(), m.end()),
-                    'snippet': code[max(0,m.start()-80):m.end()+80],
-                    'recommendation': r['recommendation']
-                })
-        return findings
+	def analyze(self, code: str, language: str='python') -> List[Dict]:
+		checks = self.rules.get(language.lower(), [])
+		findings = []
+		for r in checks:
+			for m in re.finditer(r['pattern'], code, re.IGNORECASE):
+				findings.append({
+					'title': r['title'],
+					'severity': r['severity'],
+					'span': (m.start(), m.end()),
+					'snippet': code[max(0,m.start()-80):m.end()+80],
+					'recommendation': r['recommendation']
+				})
+		return findings

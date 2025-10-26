@@ -4,13 +4,13 @@
 - Unit: COS30049 Computing Technology Innovation Project
 - Team: G2 `Motor_Ola`
 
-This is an assignment by G2 `Motor_Ola`, a team of students studying the Swinburne unit COS30049. We present an AI chatbot application used for the detection of software vulnerabilities.
+Reconnaise.ai is a project by the student team G2 `Motor_Ola` for the Swinburne unit COS30049, in which we present an AI chatbot application used for the detection of software vulnerabilities.
 
 The work is organised as follow:
 
-- `/models`: AI model for Assignment 2
-- `/backend`: FastAPI backend for Assignment 3
+- `/backend`: AI datasets and model for Assignment 2
 - `/frontend`: React frontend for Assignment 3
+- `/api`: FastAPI for Assignment 3
 
 ## Tech Stack
 
